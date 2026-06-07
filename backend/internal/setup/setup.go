@@ -28,6 +28,7 @@ const (
 	InstallLockFile            = ".installed"
 	defaultUserConcurrency     = 5
 	simpleModeAdminConcurrency = 30
+	defaultMigrationTimeoutSec = 600
 )
 
 func setupDefaultAdminConcurrency() int {
@@ -350,7 +351,7 @@ func initializeDatabase(cfg *SetupConfig) error {
 		}
 	}()
 
-	migrationCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	migrationCtx, cancel := context.WithTimeout(context.Background(), getMigrationTimeout())
 	defer cancel()
 	return repository.ApplyMigrations(migrationCtx, db)
 }
@@ -534,6 +535,14 @@ func getEnvIntOrDefault(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func getMigrationTimeout() time.Duration {
+	seconds := getEnvIntOrDefault("SETUP_MIGRATION_TIMEOUT_SECONDS", defaultMigrationTimeoutSec)
+	if seconds <= 0 {
+		seconds = defaultMigrationTimeoutSec
+	}
+	return time.Duration(seconds) * time.Second
 }
 
 // AutoSetupFromEnv performs automatic setup using environment variables

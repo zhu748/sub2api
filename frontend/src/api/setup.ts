@@ -83,6 +83,6 @@ export async function testRedis(config: RedisConfig): Promise<void> {
  * Perform installation
  */
 export async function install(config: InstallRequest): Promise<InstallResponse> {
-  const response = await setupClient.post('/setup/install', config)
+  const response = await setupClient.post('/setup/install', config, { timeout: 600000 })
   return response.data.data
 }
